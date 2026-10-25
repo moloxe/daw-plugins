@@ -5,14 +5,28 @@
 *-svg/
 *.cpp.bak
 *.o
+*/*.cpp
 
-# JUCE generated build folders and projects
+# JUCE generated projects and source files (across all plugins)
+*/Builds/
+*/*/Builds/
+*/JuceLibraryCode/
+*/*/JuceLibraryCode/
+*/*-juce/
+*/*/*.jucer
+*/*/*.cpp
+*/*/*.h
+*/*/*.mm
+*/*/*.c
+*/*/*.txt
+
+# Legacy / individual plugin folders
 noise-gate/noise_gate/
-noise-gate/noise_gate-juce/
-noise-gate/Builds/
-noise-gate/JuceLibraryCode/
+
+# Compiled plugin binaries
 *.vst3
 *.component
 *.app
 
+# Local JUCE framework
 JUCE/

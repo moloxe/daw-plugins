@@ -1,6 +1,6 @@
 # DAW Plugins (FAUST + JUCE + Xcode)
 
-Colección de plugins y procesadores de señal de audio desarrollados en [FAUST](https://faust.grame.fr/) y compilados localmente a **VST3 / AU** mediante [JUCE](https://juce.com/) y **Xcode** en macOS.
+Colección estandarizada de plugins y procesadores de señal de audio desarrollados en [FAUST](https://faust.grame.fr/) y compilados localmente a **VST3 / AU** mediante [JUCE](https://juce.com/) y **Xcode** en macOS.
 
 ---
 
@@ -12,7 +12,53 @@ Noise Gate estéreo con:
 - Controles: **Threshold (dB)**, **Attack (ms)**, **Hold (ms)**, **Release (ms)** y **Floor (dB)**.
 - Operación libre de clicks (`si.smoo`, generador de envolvente continuo $C^1$ y retención precisa en muestras).
 - Medidores visuales integrados de Input RMS y Gate Gain.
-- **Interfaz gráfica moderna inspirada en Ableton Live**: formato horizontal compacto (~450 × 175 px), paleta oscura de alto contraste, perillas con arcos cyan (`#00D2FF`) y medidores VU optimizados.
+- **Interfaz gráfica moderna inspirada en Ableton Live**: formato horizontal compacto (~450 × 196 px), paleta oscura de alto contraste, perillas con arcos cyan (`#00D2FF`) y medidores VU optimizados.
+
+---
+
+## Arquitectura y Estándar del Repositorio
+
+El repositorio cuenta con una infraestructura unificada para crear y modificar plugins manteniendo coherencia visual y técnica:
+
+```text
+daw-plugins/
+├── AGENTS.md                   # Reglas universales obligatorias para el agente AI
+├── README.md                   # Documentación general del repositorio
+├── .gitignore                  # Exclusión automática de binarios y fuentes JUCE generados
+├── JUCE/                       # Instalación de JUCE 9 (módulos y Projucer.app)
+├── scripts/
+│   ├── patch_juce_gui.py       # Parche central de UI (Ableton Dark, fuentes JUCE 9, macOS 13.0+)
+│   └── plugin_common.mk        # Makefile compartido con todas las metas de compilación
+├── .agents/skills/
+│   └── faust-juce-plugin/      # Skill especializada de Antigravity para creación de plugins
+└── noise-gate/                 # Directorio del plugin
+    ├── noise_gate.dsp          # Código FAUST del procesador DSP
+    └── Makefile                # Makefile declarativo (solo 3 líneas)
+```
+
+### Cómo Crear un Nuevo Plugin en 3 Pasos
+
+1. **Crea el subdirectorio**:
+   ```bash
+   mkdir my-plugin
+   ```
+2. **Crea su `Makefile`**:
+   ```makefile
+   DSP  = my_plugin.dsp
+   NAME = my_plugin
+
+   include ../scripts/plugin_common.mk
+   ```
+3. **Escribe el código FAUST (`my_plugin.dsp`)** siguiendo el layout horizontal `hgroup` y ejecuta:
+   ```bash
+   cd my-plugin
+   make check    # Valida sintaxis DSP
+   make juce     # Genera código C++ JUCE con tema oscuro Ableton
+   make build    # Compila e instala VST3
+   make build-au # Compila e instala AU
+   ```
+
+Consulta el documento [AGENTS.md](AGENTS.md) para conocer las normas de DSP, colores y dimensiones obligatorias.
 
 ---
 
@@ -31,22 +77,22 @@ Noise Gate estéreo con:
 ## Flujo de Compilación Local
 
 ### 1. Generar el Proyecto JUCE y Xcode
-Entra a la carpeta del plugin y ejecuta:
+Entra a la carpeta del plugin deseado y ejecuta:
 ```bash
 cd noise-gate
 make juce
 ```
-El `Makefile` automatiza:
-- Conversión de `noise_gate.dsp` a C++ mediante `faust2juce` apuntando a `daw-plugins/JUCE/modules`.
+El script automatiza:
+- Conversión de `.dsp` a C++ mediante `faust2juce` apuntando a `daw-plugins/JUCE/modules`.
 - Configuración de compatibilidad con **macOS 13.0+** (`MACOSX_DEPLOYMENT_TARGET = 13.0`).
-- Aplicación automática del tema oscuro compacto estilo Ableton (`scripts/patch_juce_gui.py`).
-- Parche automático para la API gráfica de **JUCE 9** (`juce::GlyphArrangement::getStringWidthInt`).
-- Resolución automática de dependencias de módulos (`juce_audio_processors_headless`) y generación del proyecto Xcode con `Projucer --resave --fix-missing-dependencies`.
+- Aplicación del tema oscuro compacto estilo Ableton (`scripts/patch_juce_gui.py`).
+- Parche para la API gráfica de fuentes de **JUCE 9** (`juce::GlyphArrangement::getStringWidthInt`).
+- Resolución de dependencias (`juce_audio_processors_headless`) y regeneración de Xcode con `Projucer --resave --fix-missing-dependencies`.
 
 ### 2. Compilar e Instalar (desde Terminal o Xcode)
 
 #### Opción A: Directamente desde Terminal (Recomendado)
-Desde la carpeta `noise-gate/`:
+Desde la carpeta del plugin:
 ```bash
 make build       # Compila VST3 y lo instala en ~/Library/Audio/Plug-Ins/VST3/
 make build-au    # Compila AU y lo instala en ~/Library/Audio/Plug-Ins/Components/
@@ -68,13 +114,13 @@ open noise_gate/Builds/MacOSX/noise_gate.xcodeproj
 1. Abre **Ableton Live 12 Lite**.
 2. Ve a **Live > Ajustes...** (`Cmd + ,`) > pestaña **Plug-Ins**.
 3. Activa las opciones para VST3 y/o Audio Units y haz clic en **Rescan Plugins** (mantén presionada la tecla `Option` al hacer clic para forzar un escaneo profundo).
-4. En el navegador lateral de Live, ve a **Plug-Ins** > **VST3** o **Audio Units** y arrastra **`noise_gate`** a tu pista.
+4. En el navegador lateral de Live, ve a **Plug-Ins** > **VST3** o **Audio Units** y arrastra el plugin a tu pista.
 
 ---
 
 ## Comandos Útiles del Makefile
 
-Desde la carpeta `noise-gate/`:
+Desde la carpeta de cualquier plugin:
 - `make check`: Valida la sintaxis FAUST y compila a C++ en consola.
 - `make juce`: Genera y actualiza el proyecto JUCE / Xcode con todas las dependencias y el tema Ableton.
 - `make build`: Compila el VST3 con `xcodebuild` y lo instala en el sistema.
