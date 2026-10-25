@@ -7,10 +7,10 @@ declare description "Stereo RMS Noise Gate with Threshold, Attack, Hold, Release
 import("stdfaust.lib");
 
 // ============================================================================
-// UI Controls (Grouped for Faust IDE, faust2juce and DAW hosts)
+// UI Controls (Horizontal Layout for DAW and faust2juce)
 // ============================================================================
-gate_group(x)   = vgroup("[0] Stereo Noise Gate", x);
-params_group(x) = gate_group(vgroup("[1] Parameters", x));
+gate_group(x)   = hgroup("[0] Stereo Noise Gate", x);
+params_group(x) = gate_group(hgroup("[1] Parameters", x));
 meters_group(x) = gate_group(hgroup("[2] Meters", x));
 
 // Threshold (dB): Level above which the gate opens
