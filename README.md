@@ -1,34 +1,72 @@
-# DAW Plugins (FAUST + JUCE)
+# DAW Plugins (FAUST + JUCE + Xcode)
 
-Colección de plugins y procesadores de señal de audio desarrollados en [FAUST](https://faust.grame.fr/) con exportación a [JUCE](https://juce.com/) y soporte directo para [Faust IDE](https://faustide.grame.fr/).
+Colección de plugins y procesadores de señal de audio desarrollados en [FAUST](https://faust.grame.fr/) y compilados localmente a **VST3 / AU** mediante [JUCE](https://juce.com/) y **Xcode** en macOS.
 
 ---
 
 ## Plugins
 
 ### 1. [Noise Gate](noise-gate/)
-Noise Gate estéreo de alta calidad con:
-- Detección de envolvente **RMS** enlazada estéreo.
-- Parámetros: **Threshold (dB)**, **Attack (ms)**, **Hold (ms)**, **Release (ms)** y **Floor (dB)**.
-- Transiciones continuas y libres de clicks (interpolación con `si.smoo` y generador de envolvente de primer orden con temporizador de retención en muestras).
-- Medidores visuales de RMS de entrada y reducción de ganancia integrados.
+Noise Gate estéreo con:
+- Detección de envolvente **RMS** enlazada estéreo ($\sqrt{(L^2 + R^2)/2}$).
+- Controles: **Threshold (dB)**, **Attack (ms)**, **Hold (ms)**, **Release (ms)** y **Floor (dB)**.
+- Operación libre de clicks (`si.smoo`, generador de envolvente continuo $C^1$ y retención precisa en muestras).
+- Medidores visuales integrados de Input RMS y Gate Gain.
 
 ---
 
-## Flujo de Trabajo
+## Requisitos Previos
 
-### Vía Faust IDE (Web)
-1. Abre [Faust IDE](https://faustide.grame.fr/).
-2. Arrastra el archivo `.dsp` (por ejemplo, [noise-gate/noise_gate.dsp](noise-gate/noise_gate.dsp)).
-3. Puedes probarlo directamente con audio en vivo, visualizar los diagramas de bloques y exportar a WebAudio, C++, VST, AU, etc.
+- **macOS** con Apple Silicon o Intel.
+- **Homebrew** y **FAUST**:
+  ```bash
+  brew install faust
+  ```
+- **Xcode** (desde Mac App Store o Apple Developer).
+- **JUCE 9** ubicado en la raíz del repositorio (`daw-plugins/JUCE/`).
 
-### Vía CLI Local (faust2juce)
-Requisitos previos:
-- Faust instalado (`brew install faust`).
-- JUCE / Projucer (opcional para compilar los binarios finales VST3/AU/Standalone).
+---
 
-Comandos en cada subdirectorio de plugin (ej. `cd noise-gate`):
-- `make check`: Valida la sintaxis del archivo DSP y compila a C++.
-- `make juce`: Ejecuta `faust2juce` generando la estructura de proyecto JUCE (`.jucer` y código C++ de procesamiento).
-- `make svg`: Genera diagramas de bloques en SVG para inspeccionar el flujo de señal.
-- `make clean`: Limpia artefactos generados.
+## Flujo de Compilación Local
+
+### 1. Generar el Proyecto JUCE y Xcode
+Entra a la carpeta del plugin y ejecuta:
+```bash
+cd noise-gate
+make juce
+```
+El `Makefile` automatiza:
+- Conversión de `noise_gate.dsp` a C++ mediante `faust2juce` apuntando a `daw-plugins/JUCE/modules`.
+- Configuración de compatibilidad con **macOS 13.0+** (`MACOSX_DEPLOYMENT_TARGET = 13.0`).
+- Parche automático para la API gráfica de **JUCE 9** (`juce::GlyphArrangement::getStringWidthInt`).
+- Resolución automática de dependencias de módulos (`juce_audio_processors_headless`) y generación del proyecto Xcode con `Projucer --resave --fix-missing-dependencies`.
+
+### 2. Compilar en Xcode
+Abre el proyecto generado:
+```bash
+open noise_gate/Builds/MacOSX/noise_gate.xcodeproj
+```
+1. En la barra superior de Xcode, selecciona el esquema **`noise_gate - VST3`** (o **`noise_gate - AU`**).
+2. Presiona **`Cmd + B`** (o *Product > Build*).
+3. Xcode compilará y copiará el binario resultante automáticamente a las carpetas del sistema:
+   - **VST3**: `~/Library/Audio/Plug-Ins/VST3/`
+   - **AU**: `~/Library/Audio/Plug-Ins/Components/`
+
+---
+
+## Uso en Ableton Live 12 Lite
+
+1. Abre **Ableton Live 12 Lite**.
+2. Ve a **Live > Ajustes...** (`Cmd + ,`) > pestaña **Plug-Ins**.
+3. Activa las opciones para VST3 y/o Audio Units y haz clic en **Rescan Plugins** (mantén presionada la tecla `Option` al hacer clic para forzar un escaneo profundo).
+4. En el navegador lateral de Live, ve a **Plug-Ins** > **VST3** o **Audio Units** y arrastra **`noise_gate`** a tu pista.
+
+---
+
+## Comandos Útiles del Makefile
+
+Desde la carpeta `noise-gate/`:
+- `make check`: Valida la sintaxis FAUST y compila a C++ en consola.
+- `make juce`: Genera y actualiza el proyecto JUCE / Xcode con todas las dependencias.
+- `make svg`: Genera los diagramas de bloques del algoritmo DSP en SVG.
+- `make clean`: Limpia los artefactos generados.
