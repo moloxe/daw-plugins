@@ -14,6 +14,14 @@ Noise Gate estéreo con:
 - Medidores visuales integrados de Input RMS y Gate Gain.
 - **Interfaz gráfica moderna inspirada en Ableton Live**: formato horizontal compacto (~450 × 196 px), paleta oscura de alto contraste, perillas con arcos cyan (`#00D2FF`) y medidores VU optimizados.
 
+### 2. [Feedback Suppressor](feedback-suppressor/)
+Supresor automático y quirúrgico de acople acústico (*feedback / Larsen*) en milisegundos con:
+- **Detección analítica de prominencia tonal**: Monitoreo en 8 bandas críticas (`160 Hz` a `10 kHz`) que evalúa la relación entre energía resonante ultra estrecha y energía vecina para destruir pitidos de acople sin alterar el brillo ni el tono natural de la voz o instrumento.
+- **Botón `Calibrate`**: Escaneo y memorización rápida (*room resonance latch*) de los filtros notch necesarios en la habitación o escenario, con botón `Reset` para limpiar la memoria instantáneamente.
+- **Controles simplificados**: **Calibrate**, **Reset**, **Sensitivity (dB)**, **Max Cut (dB)**, **Sharpness (Q)** y **Gain (dB)**.
+- **Visualizador de Supresión de Acople**: Panel gráfico con 8 medidores de corte descendentes desde $0\text{ dB}$ en color Cyan Ableton (`#00D2FF`) que reflejan la profundidad de la muesca quirúrgica en tiempo real, junto con medidor RMS de entrada.
+
+
 ---
 
 ## Arquitectura y Estándar del Repositorio

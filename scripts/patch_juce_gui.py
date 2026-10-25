@@ -242,6 +242,65 @@ NEW_UI_NUMDISPLAY_DRAW = """        void drawNumDisplay(juce::Graphics& g, int w
             g.drawRoundedRectangle((float)x, (float)y, (float)width, (float)height, 3.0f, 0.8f);
         }"""
 
+NEW_UI_VUMETER_DRAW_DB = """        void drawVBargraphDB(juce::Graphics& g, int x, int width)
+        {
+            // Drawing Scale
+            g.setFont(juce::Font(juce::FontOptions(8.0f)));
+            g.setColour(juce::Colour(0xff8a8e99));
+            for (int i = -10; i > fMin; i -= 10) {
+                paintScale(g, i);
+            }
+            for (int i = -6; i < fMax; i += 3)  {
+                paintScale(g, i);
+            }
+
+            // Check if this is a downward suppression / notch cut meter
+            bool isCutMeter = (fMax == 0.0f && fMin >= -50.0f) || getName().contains("Cut") || getName().contains("Hz") || getName().endsWith("k");
+            if (isCutMeter) {
+                float yZero = (float) dB2y(0.0f);
+                float yCut  = (float) dB2y(fLevel);
+                if (yCut > yZero + 1.0f) {
+                    // Modern Ableton Cyan gradient for surgical feedback suppression
+                    juce::ColourGradient grad(juce::Colour(0xff00d2ff), (float)x, yZero,
+                                              juce::Colour(0xff0088cc), (float)x, yCut, false);
+                    g.setGradientFill(grad);
+                    g.fillRect((float)x + 1.0f, yZero, (float)width - 2.0f, yCut - yZero);
+                    // Needle highlight line at the cut floor
+                    g.setColour(juce::Colour(0xffffffff));
+                    g.drawHorizontalLine((int)yCut, (float)x + 1.0f, (float)x + (float)width - 1.0f);
+                }
+                return;
+            }
+
+            int alpha = 200;
+            FAUSTFLOAT dblevel = dB2Scale(fLevel);
+
+            // Drawing from the minimal range to the current level, or -10dB.
+            g.setColour(juce::Colour((juce::uint8)40, (juce::uint8)160, (juce::uint8)40, (juce::uint8)alpha));
+            g.fillRect(x+1.0f, juce::jmax(dB2y(fLevel), dB2y(-10)), (float)width-2, dB2y(fMin)-juce::jmax(dB2y(fLevel), dB2y(-10)));
+
+            // Drawing from -10dB to the current level, or -6dB.
+            if (dblevel > dB2Scale(-10)) {
+                g.setColour(juce::Colour((juce::uint8)160, (juce::uint8)220, (juce::uint8)20, (juce::uint8)alpha));
+                g.fillRect(x+1.0f, juce::jmax(dB2y(fLevel), dB2y(-6)), (float)width-2, dB2y(-10)-juce::jmax(dB2y(fLevel), dB2y(-6)));
+            }
+            // Drawing from -6dB to the current level, or -3dB.
+            if (dblevel > dB2Scale(-6)) {
+                g.setColour(juce::Colour((juce::uint8)220, (juce::uint8)220, (juce::uint8)20, (juce::uint8)alpha));
+                g.fillRect(x+1.0f, juce::jmax(dB2y(fLevel), dB2y(-3)), (float)width-2, dB2y(-6)-juce::jmax(dB2y(fLevel), dB2y(-3)));
+            }
+            // Drawing from -3dB to the current level, or 0dB.
+            if (dblevel > dB2Scale(-3)) {
+                g.setColour(juce::Colour((juce::uint8)240, (juce::uint8)160, (juce::uint8)20, (juce::uint8)alpha));
+                g.fillRect(x+1.0f, juce::jmax(dB2y(fLevel), dB2y(0)), (float)width-2, dB2y(-3)-juce::jmax(dB2y(fLevel), dB2y(0)));
+            }
+            // Drawing from 0dB to the current level, or the maximum range.
+            if (dblevel > dB2Scale(0)) {
+                g.setColour(juce::Colour((juce::uint8)240, (juce::uint8)0, (juce::uint8)20, (juce::uint8)alpha));
+                g.fillRect(x+1.0f, juce::jmax(dB2y(fLevel), dB2y(fMax)), (float)width-2, dB2y(0)-juce::jmax(dB2y(fLevel), dB2y(fMax)));
+            }
+        }"""
+
 NEW_UI_VUMETER_SETUP_LABEL = """        void setupLabel(juce::String tooltip)
         {
             setLabelPos();
@@ -361,6 +420,11 @@ def patch_processor(processor_path):
     old_vumeter_draw_pattern = r'void drawVBargraph\(juce::Graphics& g, int width, int height\)\s*\{.*?fDB \? drawVBargraphDB \(g, x, width\) : drawVBargraphLin\(g, x, width\);\s*\}'
     if re.search(old_vumeter_draw_pattern, src, re.DOTALL):
         src = re.sub(old_vumeter_draw_pattern, NEW_UI_VUMETER_DRAW, src, flags=re.DOTALL)
+
+    # 9b. Patch uiVUMeter::drawVBargraphDB with downward suppression / notch cut visualization
+    old_vumeter_db_pattern = r'void drawVBargraphDB\(juce::Graphics& g, int x, int width\)\s*\{.*?dblevel > dB2Scale\(0\)\)\s*\{.*?\}\s*\}'
+    if re.search(old_vumeter_db_pattern, src, re.DOTALL):
+        src = re.sub(old_vumeter_db_pattern, NEW_UI_VUMETER_DRAW_DB, src, flags=re.DOTALL)
 
     # 10. Patch uiVUMeter::drawHBargraph
     old_hbargraph_draw_pattern = r'void drawHBargraph\(juce::Graphics& g, int width, int height\)\s*\{.*?fDB \? drawHBargraphDB \(g, y, height\) : drawHBargraphLin\(g, x, y, width, height\);\s*\}'
