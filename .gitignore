@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Faust compilation outputs
+*-svg/
+*.cpp.bak
+*.o
+
+# JUCE generated build folders and projects
+noise-gate/noise_gate/
+noise-gate/noise_gate-juce/
+noise-gate/Builds/
+noise-gate/JuceLibraryCode/
+*.vst3
+*.component
+*.app
