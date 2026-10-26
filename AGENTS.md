@@ -17,7 +17,8 @@ Este documento define el estándar obligatorio y universal para la creación, mo
 
   include ../scripts/plugin_common.mk
   ```
-- **Recursos Compartidos**:
+- **Recursos Compartidos y Documentación**:
+  - `daw-plugins/docs/PLUGIN-INSTRUCTIONS.md`: Manual de usuario y guía operativa de todos los plugins del repositorio (parámetros, posición en la cadena de audio, calibración, medidores y presets).
   - `daw-plugins/JUCE/`: Instalación compartida de JUCE 9 (módulos y `Projucer.app`).
   - `daw-plugins/scripts/patch_juce_gui.py`: Script centralizado de parcheo de compatibilidad JUCE 9, macOS 13.0+ y tema oscuro Ableton Live.
   - `daw-plugins/scripts/plugin_common.mk`: Reglas comunes de `make` (`check`, `juce`, `build`, `build-au`, `build-standalone`, `svg`, `clean`).
@@ -106,4 +107,11 @@ Antes de dar por completado cualquier plugin nuevo o cambio en uno existente:
 2. Si se modificó la lógica DSP, escribir o ejecutar una verificación matemática en C++ o test de respuesta de señal (por ejemplo, comprobar respuesta a impulsos, umbrales o suavizado).
 3. Ejecutar `make juce` y luego `make build` y `make build-au`.
 4. Verificar que `git status` no muestre archivos generados o binarios no deseados.
-5. Recordar al usuario la recarga en Ableton Live 12 Lite con `Option` (⌥) + clic en **Rescan Plugins**.
+5. **Actualización Obligatoria de Documentación (`docs/PLUGIN-INSTRUCTIONS.md`)**:
+   Al crear un nuevo plugin o modificar controles, lógica o medidores de uno existente, es **ESTRICTAMENTE OBLIGATORIO** añadir o actualizar su sección en `docs/PLUGIN-INSTRUCTIONS.md` detallando:
+   - Resumen funcional y posición en la cadena de audio (DAW / Live).
+   - Tabla completa de parámetros (rangos, unidades, valores por defecto y función).
+   - Explicación de medidores y visualizadores.
+   - Guía paso a paso de uso y calibración.
+   - Presets recomendados y solución de problemas comunes.
+6. Recordar al usuario la recarga en Ableton Live 12 Lite con `Option` (⌥) + clic en **Rescan Plugins**.

@@ -6,6 +6,8 @@ Colección estandarizada de plugins y procesadores de señal de audio desarrolla
 
 ## Plugins
 
+> 📖 **Guía Completa de Uso y Parámetros**: Consulta el manual detallado [docs/PLUGIN-INSTRUCTIONS.md](docs/PLUGIN-INSTRUCTIONS.md) para conocer las instrucciones de uso paso a paso, calibración en sala, flujo de señal en tu DAW, tablas completas de parámetros, lectura de medidores y presets recomendados.
+
 ### 1. [Noise Gate](noise-gate/)
 Noise Gate estéreo con:
 - Detección de envolvente **RMS** enlazada estéreo ($\sqrt{(L^2 + R^2)/2}$).
@@ -32,6 +34,8 @@ El repositorio cuenta con una infraestructura unificada para crear y modificar p
 daw-plugins/
 ├── AGENTS.md                   # Reglas universales obligatorias para el agente AI
 ├── README.md                   # Documentación general del repositorio
+├── docs/
+│   └── PLUGIN-INSTRUCTIONS.md  # Manual completo de uso, calibración y presets
 ├── .gitignore                  # Exclusión automática de binarios y fuentes JUCE generados
 ├── JUCE/                       # Instalación de JUCE 9 (módulos y Projucer.app)
 ├── scripts/
@@ -39,8 +43,11 @@ daw-plugins/
 │   └── plugin_common.mk        # Makefile compartido con todas las metas de compilación
 ├── .agents/skills/
 │   └── faust-juce-plugin/      # Skill especializada de Antigravity para creación de plugins
-└── noise-gate/                 # Directorio del plugin
-    ├── noise_gate.dsp          # Código FAUST del procesador DSP
+├── noise-gate/                 # Stereo RMS Noise Gate
+│   ├── noise_gate.dsp          # Código FAUST del procesador DSP
+│   └── Makefile                # Makefile declarativo (solo 3 líneas)
+└── feedback-suppressor/        # Automatic Surgical Feedback Suppressor
+    ├── feedback_suppressor.dsp # Código FAUST del procesador DSP
     └── Makefile                # Makefile declarativo (solo 3 líneas)
 ```
 

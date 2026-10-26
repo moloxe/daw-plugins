@@ -41,6 +41,9 @@ When creating a new plugin (e.g. `compressor/`):
    make build-au
    make build-standalone
    ```
+5. **Update User Documentation (`docs/PLUGIN-INSTRUCTIONS.md`)**:
+   - Add the new plugin's full guide to `docs/PLUGIN-INSTRUCTIONS.md`.
+   - Document signal chain placement, full controls table, meter/visualizer behavior, step-by-step calibration/usage workflow, recommended presets, and troubleshooting tips.
 
 ---
 
@@ -99,4 +102,5 @@ All styling is automated by `scripts/patch_juce_gui.py`:
    - `make build` (VST3 -> `~/Library/Audio/Plug-Ins/VST3/`)
    - `make build-au` (AU -> `~/Library/Audio/Plug-Ins/Components/`)
    - `make build-standalone` (Standalone app -> check window geometry)
-5. **DAW Rescan**: Guide the user to press `Option` (⌥) + click **Rescan Plugins** in Ableton Live.
+5. **Update User Instructions**: Keep `docs/PLUGIN-INSTRUCTIONS.md` up to date with complete controls, signal chain placement, calibration steps, and presets.
+6. **DAW Rescan**: Guide the user to press `Option` (⌥) + click **Rescan Plugins** in Ableton Live.
